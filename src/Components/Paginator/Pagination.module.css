@@ -1,0 +1,54 @@
+.page-link {
+  background-color: rgb(255, 217, 255);
+  text-decoration: none;
+  width: 40px;
+  height: 40px;
+  font-family: 'Raleway',sans-serif; 
+  font-size: 20px; 
+  font-weight: 800; 
+  text-align: center; 
+  text-transform: uppercase;
+  color: rgb(255, 217, 255);
+  background-color: transparent;
+  background-repeat: no-repeat;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  outline: none;
+  
+}
+
+.page-link:hover{
+  color:  rgb(175, 0, 88);
+  
+
+
+}
+.active-page {
+
+  color:  rgb(255, 49, 152);
+  background-color: transparent;
+  background-repeat: no-repeat;
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  outline: none;
+  font-family: 'Raleway',sans-serif; 
+  font-size: 20px; 
+  font-weight: 800; 
+  text-align: center; 
+  text-transform: uppercase;
+}
+
+/* .paginate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pagination {
+  list-style-type: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+} */
+
