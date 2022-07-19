@@ -1,4 +1,3 @@
-import { useState } from "react";
 import style from "./ToDo.module.css";
 
 const ToDo = ({
@@ -9,55 +8,34 @@ const ToDo = ({
   todos,
   changeTaskStaus,
   removeTask,
+  editTaskOnDclick
 }) => {
-  const [statusTaskInput, setStatusTaskInput] = useState(0);
-  const getDate = () => {
-    const day = new Date().getDate();
-    const month = new Date().getMonth() + 1;
-    const years = new Date().getFullYear();
-    return (
-      <p>
-        {day}/{month}/{years}
-      </p>
-    );
-  };
+ 
+
   const keyPress = (event, id) => {
     switch (event.key) {
       case "Enter":
-        submitTask(event, id);
-        setStatusTaskInput(0);
+        editTaskOnDclick(id);
+        // changeStatusInput(id)
         break;
       case "Escape":
-        setStatusTaskInput(0);
+        changeStatusInput(id)
         break;
       default:
         break;
     }
   };
+
   const blurInput = (event, id) => {
-    submitTask(event, id);
-  };
-  const submitTask = (event, id) => {
-    const title = userInput;
-    if (title) {
-      const task = todos.find((todo) => todo.id === id);
-      const newTask = todos.map((item) => {
-        if (item.id === task.id) {
-          console.log(id, item.id);
-          const newItem = { ...item };
-          console.log(newItem);
-          newItem.task = title;
-          return newItem;
-        }
-        return item;
-      });
-      setTodos(newTask);
-    }
+    editTaskOnDclick(event, id);
   };
 
-  const changeStatusInput = () => {
+
+  const changeStatusInput = (id) => {
     setUserInput("");
-    setStatusTaskInput(1);
+    const changedStatusInput = todos.map((todo) =>
+    todo.id === id ? { ...todo, edit: !todo.edit,  } : {...todo});
+    setTodos(changedStatusInput);
   };
 
   const handleChange = (event) => {
@@ -65,7 +43,7 @@ const ToDo = ({
   };
 
   return (
-    <div key={todo.id} className={style["item-todo"]}>
+    <div className={style["item-todo"]}>
       <div className={style["task-block"]}>
         <div className={style["left-side"]}>
           <div onClick={() => changeTaskStaus(todo.id)}>
@@ -78,7 +56,7 @@ const ToDo = ({
                 : style["item-text"]
             }
           >
-            {statusTaskInput === 1 ? (
+            {todo.edit === true ? (
               <input
                 className={style["editTask"]}
                 autoFocus
@@ -97,9 +75,9 @@ const ToDo = ({
               <div
                 className={style["task__text"]}
                 id={todo.id}
-                onDoubleClick={() => {
-                  changeStatusInput();
-                }}
+                onDoubleClick={() => 
+                  changeStatusInput(todo.id)
+                }
               >
                 {todo.task}
               </div>
@@ -107,7 +85,7 @@ const ToDo = ({
           </div>
         </div>
         <div className={style["right-side"]}>
-          <div className={style["date-task"]}>{getDate()}</div>
+          <div className={style["date-task"]}>{todo.createdAt.toLocaleTimeString()}</div>
           <div
             className={style["item-delete"]}
             onClick={() => removeTask(todo.id)}

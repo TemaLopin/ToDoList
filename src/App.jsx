@@ -5,27 +5,29 @@ import ToDoInput from "./Components/ToDoInput/ToDoInput";
 import style from "./App.module.css";
 // import axios from "axios";
 // import { GetRepos } from "./Components/axios/repos";
-
-const App = () => {
   const FILTERS = {
     ALL: 0,
     DONE: 1,
     UNDONE: 2,
-    FORWARD_DATE: 3,
-    BACK_DATE: 4,
   };
-  const [todos, setTodos] = useState([]);
-  const [currentTask, setCurrentTask] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const TASK_PER_PAGE = 5;
-  const [userInput, setUserInput] = useState("");
-  const lastTaskIndex = currentPage * TASK_PER_PAGE;
-  const firstTaskIndex = lastTaskIndex - TASK_PER_PAGE;
-  const countPages = (todos) => Math.ceil(todos.length / TASK_PER_PAGE) || 1;
-  const [allNumbersOnPage, setAllNumbersOfPage] = useState(countPages(todos));
-  const [filterNow, setFilterNow] = useState(FILTERS.ALL);
   
 
+const App = () => {
+
+
+  const [todos, setTodos] = useState([]);
+  const [currentTask, setCurrentTask] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);  
+  const [userInput, setUserInput] = useState("");  
+  const [sortDate, setSortDate] = useState(false);
+  const [filterNow, setFilterNow] = useState(FILTERS.ALL);
+  const [statusTaskInput, setStatusTaskInput] = useState();
+
+  const countPages = (todos) => Math.ceil(todos.length / TASK_PER_PAGE) || 1;
+  const lastTaskIndex = currentPage * TASK_PER_PAGE;
+  const firstTaskIndex = lastTaskIndex - TASK_PER_PAGE;
+  const [allNumbersOnPage, setAllNumbersOfPage] = useState(countPages(todos));
 
 
   const addTask = (userInput) => {
@@ -35,8 +37,8 @@ const App = () => {
         task: userInput,
         complete: false,
         createdAt: new Date(),
+        edit: statusTaskInput,
       }
-      console.log(newItem)
       // axios.post('https://todo-api-learning.herokuapp.com/v1/tasks/4', {newItem})
       setTodos([...todos, newItem]);
     }
@@ -48,13 +50,38 @@ const App = () => {
 
   const changeTaskStaus = (id) => {
     const changedStatusInTask = todos.map((todo) =>
-      todo.id === id ? { ...todo, complete: !todo.complete } : { ...todo }
+      todo.id === id ? { ...todo, complete: !todo.complete } : {...todo} 
     );
     setTodos(changedStatusInTask);
   };
 
+
+
+useEffect(() => {
+    switch (sortDate){
+      case true: 
+        setCurrentTask(todos.sort((a, b) => b.createdAt - a.createdAt));
+      break;
+      case false:
+        setCurrentTask(todos.sort((a, b) => a.createdAt - b.createdAt));
+        break
+    }
+},[sortDate])
+
+
   const selectedPage = (numbers) => {
     setCurrentPage(numbers);
+  };
+
+
+  const editTaskOnDclick = (id) => {
+    console.log(id, userInput)
+    const title = userInput;
+    if (title) {
+      const newTask = todos.map((item) => 
+      item.id === id ? {...item, task: title, edit: false} : {...item})
+      setTodos(newTask)
+    }
   };
 
   useEffect(() => {
@@ -67,16 +94,11 @@ const App = () => {
         setCurrentTask(todos.filter((item) => !item.complete));
         // setCurrentPage(1)
         break;
-      case 3:
-        setCurrentTask(todos.sort((a, b) => b.createdAt - a.createdAt));
-        break;
-      case 4:
-        setCurrentTask(todos.sort((a, b) => a.createdAt - b.createdAt));
-        break;
       default:
         setCurrentTask(todos);
     }
   }, [filterNow, todos]);
+
 
   useEffect(() => {
     if (currentPage <= allNumbersOnPage) {
@@ -124,13 +146,13 @@ const App = () => {
         </button>
         <button
           className={filterNow === FILTERS.BACK_DATE ? style["data-filter-active"] : style["date-filter"]}
-          onClick={() => setFilterNow(FILTERS.BACK_DATE)}
+          onClick={() => setSortDate(false)}
         >
           <span>date up</span>
         </button>
         <button
           className={filterNow === FILTERS.FORWARD_DATE ? style["data-filter-active"] : style["date-filter"]}
-          onClick={() => setFilterNow(FILTERS.FORWARD_DATE)}
+          onClick={() => setSortDate(true)}
         >
           <span>date down</span>
         </button>
@@ -141,14 +163,15 @@ const App = () => {
           return (
             <ToDo
               todo={todo}
-              addTask={addTask}
-              key={todo.id}
               setTodos={setTodos}
               changeTaskStaus={changeTaskStaus}
               todos={todos}
               removeTask={removeTask}
               userInput={userInput}
               setUserInput={setUserInput}
+              statusTaskInput = {statusTaskInput}
+              setStatusTaskInput = {setStatusTaskInput}
+              editTaskOnDclick={editTaskOnDclick}
             />
           );
         })}
@@ -165,7 +188,7 @@ const App = () => {
         ) : (
           <span> </span>
         )}
-        {new Array(allNumbersOnPage).fill().map((item, i) => (
+        {new Array(allNumbersOnPage).fill().map((_, i) => (
           <Pagination
             i={i + 1}
             selectedPage={selectedPage}
