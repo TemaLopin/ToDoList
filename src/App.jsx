@@ -3,6 +3,8 @@ import Pagination from "./Components/Paginator/Pagination";
 import ToDo from "./Components/ToDo/ToDo";
 import ToDoInput from "./Components/ToDoInput/ToDoInput";
 import style from "./App.module.css";
+// import axios from "axios";
+// import { GetRepos } from "./Components/axios/repos";
 
 const App = () => {
   const FILTERS = {
@@ -22,6 +24,9 @@ const App = () => {
   const countPages = (todos) => Math.ceil(todos.length / TASK_PER_PAGE) || 1;
   const [allNumbersOnPage, setAllNumbersOfPage] = useState(countPages(todos));
   const [filterNow, setFilterNow] = useState(FILTERS.ALL);
+  
+
+
 
   const addTask = (userInput) => {
     if (userInput && !userInput.includes("  ")) {
@@ -30,7 +35,9 @@ const App = () => {
         task: userInput,
         complete: false,
         createdAt: new Date(),
-      };
+      }
+      console.log(newItem)
+      // axios.post('https://todo-api-learning.herokuapp.com/v1/tasks/4', {newItem})
       setTodos([...todos, newItem]);
     }
   };
@@ -53,13 +60,11 @@ const App = () => {
   useEffect(() => {
     switch (filterNow) {
       case 1:
-        const arrByFilterDone = todos.filter((item) => item.complete);
-        setCurrentTask(arrByFilterDone);
+        setCurrentTask(todos.filter((item) => item.complete));
         // setCurrentPage(1)
         break;
       case 2:
-        const arrByFilterUndone = todos.filter((item) => !item.complete);
-        setCurrentTask(arrByFilterUndone);
+        setCurrentTask(todos.filter((item) => !item.complete));
         // setCurrentPage(1)
         break;
       case 3:
@@ -85,11 +90,10 @@ const App = () => {
     setAllNumbersOfPage(countPages(currentTask));
   }, [filterNow, allNumbersOnPage, currentTask]);
 
-  // useEffect(() => {
-  //   setCurrentTask(todos);
-  // }, [ todos]);
+
 
   return (
+    
     <div className={style["App"]}>
       <header>
         <h1>ToDo</h1>
@@ -102,36 +106,36 @@ const App = () => {
       <div className={style[`filter-button-list`]}>
         <button
           onClick={() => setFilterNow(FILTERS.ALL)}
-          className={style[`filter-button`]}
+          className={filterNow === FILTERS.ALL ? style["data-filter-active"] : style["date-filter"]}
         >
           All
         </button>
         <button
           onClick={() => setFilterNow(FILTERS.DONE)}
-          className={style[`filter-button`]}
+          className={filterNow === FILTERS.DONE ? style["data-filter-active"] : style["date-filter"]}
         >
           Done
         </button>
         <button
           onClick={() => setFilterNow(FILTERS.UNDONE)}
-          className={style[`filter-button`]}
+          className={filterNow === FILTERS.UNDONE ? style["data-filter-active"] : style["date-filter"]}
         >
           Undone
         </button>
         <button
-          className={style["date-filter"]}
+          className={filterNow === FILTERS.BACK_DATE ? style["data-filter-active"] : style["date-filter"]}
           onClick={() => setFilterNow(FILTERS.BACK_DATE)}
         >
           <span>date up</span>
         </button>
         <button
-          className={style["date-filter"]}
+          className={filterNow === FILTERS.FORWARD_DATE ? style["data-filter-active"] : style["date-filter"]}
           onClick={() => setFilterNow(FILTERS.FORWARD_DATE)}
         >
           <span>date down</span>
         </button>
       </div>
-
+      
       <div className={style["todo-list"]}>
         {currentTask.slice(firstTaskIndex, lastTaskIndex).map((todo) => {
           return (
@@ -148,6 +152,7 @@ const App = () => {
             />
           );
         })}
+       
       </div>
       <div className={style["pagination-block"]}>
         {currentPage > 1 ? (
@@ -181,6 +186,7 @@ const App = () => {
       </div>
     </div>
   );
+
 };
 
 export default App;

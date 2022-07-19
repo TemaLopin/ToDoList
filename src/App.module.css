@@ -54,6 +54,10 @@ h1 {
   background: rgb(255, 108, 255);
 }
 
+.data-filter-active {
+  background-color: rgb(255, 49, 152);
+}
+
  .date-filter:hover {
   padding-bottom:5px;
 }/*
