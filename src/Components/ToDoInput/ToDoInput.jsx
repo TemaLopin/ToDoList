@@ -15,6 +15,7 @@ function ToDoForm({ addTask, userInput, setUserInput }) {
       submitTodo(e);
     }
   };
+
   return (
     <div className={style["todo-input"]} onSubmit={submitTodo}>
       <input

@@ -25,10 +25,12 @@
 
 }
 .active-page {
-
+  width: 40px;
+  height: 40px;
   color:  rgb(255, 49, 152);
   background-color: transparent;
   background-repeat: no-repeat;
+  text-decoration: none;
   border: none;
   cursor: pointer;
   overflow: hidden;

@@ -6,9 +6,10 @@ const ToDo = ({
   setTodos,
   todo,
   todos,
-  changeTaskStaus,
+  changeTaskStatus,
   removeTask,
-  editTaskOnDclick
+  editTaskOnDclick, 
+
 }) => {
  
 
@@ -31,10 +32,10 @@ const ToDo = ({
   };
 
 
-  const changeStatusInput = (id) => {
+  const changeStatusInput = (uuid) => {
     setUserInput("");
     const changedStatusInput = todos.map((todo) =>
-    todo.id === id ? { ...todo, edit: !todo.edit,  } : {...todo});
+    todo.uuid === uuid ? { ...todo, edit: !todo.edit,  } : {...todo});
     setTodos(changedStatusInput);
   };
 
@@ -43,15 +44,15 @@ const ToDo = ({
   };
 
   return (
-    <div className={style["item-todo"]}>
+    <div key={todo.id} className={style["item-todo"]}>
       <div className={style["task-block"]}>
         <div className={style["left-side"]}>
-          <div onClick={() => changeTaskStaus(todo.id)}>
-            {todo.complete ? <span>&#10006;</span> : <span>&#10004;</span>}
+          <div onClick={() => changeTaskStatus(todo.uuid)}>
+            {todo.done ? <span>&#10006;</span> : <span>&#10004;</span>}
           </div>
           <div
             className={
-              todo.complete
+              todo.done
                 ? `${`${style["item-text"]} ${style["strike"]}`}`
                 : style["item-text"]
             }
@@ -62,10 +63,10 @@ const ToDo = ({
                 autoFocus
                 placeholder={todo.task}
                 onBlur={() => {
-                  blurInput(todo.id);
+                  blurInput(todo.uuid);
                 }}
                 onKeyDown={(event) => {
-                  keyPress(event, todo.id);
+                  keyPress(event, todo.uuid);
                 }}
                 value={userInput}
                 onChange={handleChange}
@@ -74,21 +75,21 @@ const ToDo = ({
             ) : (
               <div
                 className={style["task__text"]}
-                id={todo.id}
+                id={todo.uuid}
                 onDoubleClick={() => 
-                  changeStatusInput(todo.id)
+                  changeStatusInput(todo.uuid)
                 }
               >
-                {todo.task}
+                {todo.name}
               </div>
             )}
           </div>
         </div>
         <div className={style["right-side"]}>
-          <div className={style["date-task"]}>{todo.createdAt.toLocaleTimeString()}</div>
+          <div className={style["date-task"]}>{todo.createdAt.substr(0,10)}</div>
           <div
             className={style["item-delete"]}
-            onClick={() => removeTask(todo.id)}
+            onClick={() => removeTask(todo.uuid)}
           >
             &#128465;
           </div>

@@ -3,8 +3,8 @@ import Pagination from "./Components/Paginator/Pagination";
 import ToDo from "./Components/ToDo/ToDo";
 import ToDoInput from "./Components/ToDoInput/ToDoInput";
 import style from "./App.module.css";
-// import axios from "axios";
-// import { GetRepos } from "./Components/axios/repos";
+import axios from "axios";
+
   const FILTERS = {
     ALL: 0,
     DONE: 1,
@@ -17,105 +17,160 @@ const App = () => {
 
 
   const [todos, setTodos] = useState([]);
-  const [currentTask, setCurrentTask] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);  
   const [userInput, setUserInput] = useState("");  
   const [sortDate, setSortDate] = useState(false);
   const [filterNow, setFilterNow] = useState(FILTERS.ALL);
-  const [statusTaskInput, setStatusTaskInput] = useState();
+  // const [statusTaskInput, setStatusTaskInput] = useState();
+  const [tasksCount, setTasksCount] = useState(0)
+
 
   const countPages = (todos) => Math.ceil(todos.length / TASK_PER_PAGE) || 1;
-  const lastTaskIndex = currentPage * TASK_PER_PAGE;
-  const firstTaskIndex = lastTaskIndex - TASK_PER_PAGE;
+  // const lastTaskIndex = currentPage * TASK_PER_PAGE;
+  // const firstTaskIndex = lastTaskIndex - TASK_PER_PAGE;
   const [allNumbersOnPage, setAllNumbersOfPage] = useState(countPages(todos));
+
+
+
 
 
   const addTask = (userInput) => {
     if (userInput && !userInput.includes("  ")) {
-      const newItem = {
-        id: Math.random().toString(36).substr(2, 9),
-        task: userInput,
-        complete: false,
-        createdAt: new Date(),
-        edit: statusTaskInput,
-      }
-      // axios.post('https://todo-api-learning.herokuapp.com/v1/tasks/4', {newItem})
-      setTodos([...todos, newItem]);
+      axios.post("https://todo-api-learning.herokuapp.com/v1/task/4", {
+        name: userInput,
+        done: false,
+      })
+      .then((res) => {
+        console.log(res.data)
+        // const result = [...todos, res.data]
+        // if (result.length <= TASK_PER_PAGE) {
+          // setTodos(result);
+        // }
+        setTasksCount(tasksCount + 1)
+      }).catch((e) =>console.log(e))
+      setUserInput("");
+      // const newItem = {
+      //   id: Math.random().toString(36).substr(2, 9),
+      //   task: userInput,
+      //   complete: false,
+      //   createdAt: new Date(),
+      //   edit: statusTaskInput,
+      // }
+      // setTodos([...todos, newItem]);
     }
   };
 
-  const removeTask = (id) => {
-    setTodos(todos.filter((todo) => todo.id !== id));
+  const removeTask = (uuid) => {
+    // setTodos(todos.filter((todo) => todo.id !== id));
+    axios.delete(`https://todo-api-learning.herokuapp.com/v1/task/4/${uuid}`).then(() => {
+      const deletedTask = todos.filter((item) => item.uuid !== uuid);
+      setTodos(deletedTask);// naming
+      setTasksCount(tasksCount - 1)
+    }).catch((e) =>alert(`Error! ${e}`))
+
   };
 
-  const changeTaskStaus = (id) => {
-    const changedStatusInTask = todos.map((todo) =>
-      todo.id === id ? { ...todo, complete: !todo.complete } : {...todo} 
-    );
-    setTodos(changedStatusInTask);
+  const changeTaskStatus = (uuid, done) => {
+    axios.patch(`https://todo-api-learning.herokuapp.com/v1/task/4/${uuid}`, {done: !done}).then(() => {
+      setTodos(
+        todos.filter((item) => {
+          if (item.uuid === uuid) {
+            item.done = !item.done;
+          }
+          return item;
+        })
+      );
+    }).catch((e) =>console.log(`Error! ${e}`))
+    // const changedStatusInTask = todos.map((todo) =>
+    //   todo.id === id ? { ...todo, complete: !todo.complete } : {...todo} 
+    // );
+    // setTodos(changedStatusInTask);
   };
-
-
-
-useEffect(() => {
-    switch (sortDate){
-      case true: 
-        setCurrentTask(todos.sort((a, b) => b.createdAt - a.createdAt));
-      break;
-      case false:
-        setCurrentTask(todos.sort((a, b) => a.createdAt - b.createdAt));
-        break
-    }
-},[sortDate])
-
 
   const selectedPage = (numbers) => {
     setCurrentPage(numbers);
   };
 
 
-  const editTaskOnDclick = (id) => {
-    console.log(id, userInput)
+  const editTaskOnDclick = (uuid) => {
+    console.log(uuid, userInput)
     const title = userInput;
     if (title) {
       const newTask = todos.map((item) => 
-      item.id === id ? {...item, task: title, edit: false} : {...item})
+      item.uuid === uuid ? {...item, task: title, edit: false} : {...item})
       setTodos(newTask)
     }
   };
+  
+
 
   useEffect(() => {
-    switch (filterNow) {
-      case 1:
-        setCurrentTask(todos.filter((item) => item.complete));
-        // setCurrentPage(1)
+    const fetchData = async () => {
+      let filter = '';
+      if (filterNow === 1) filter = 'done';
+      if (filterNow === 2) filter = 'undone';
+      if (filterNow === 0) filter = ''; 
+
+      const { data } = await axios
+        .get(
+          `https://todo-api-learning.herokuapp.com/v1/tasks/4?filterBy=${filter}&order=${sortDate ? 'asc' : 'desc'}&pp=5&page=${currentPage}`
+        ).catch(e =>{
+          switch (e.response.status) {
+            case 400: alert('task not created');
+          
+          }
+        })
+      setTodos(data.tasks);
+      setTasksCount(data.count)
+      setAllNumbersOfPage(Math.ceil(tasksCount / 5) || 1)
+        }
+    fetchData()
+    
+  }, [todos])
+  useEffect(() => {
+    switch (sortDate){
+      case true: 
+      setTodos(todos.sort((a, b) => b.createdAt - a.createdAt));
+      break;
+      case false:
+        setTodos(todos.sort((a, b) => a.createdAt - b.createdAt));
         break;
-      case 2:
-        setCurrentTask(todos.filter((item) => !item.complete));
-        // setCurrentPage(1)
-        break;
-      default:
-        setCurrentTask(todos);
+      default: break;
     }
-  }, [filterNow, todos]);
+},[sortDate])
 
 
-  useEffect(() => {
-    if (currentPage <= allNumbersOnPage) {
-      setCurrentPage(currentPage);
-    } else if (currentPage >= 2) {
-      setCurrentPage(currentPage - 1 || 1);
-    }
-  }, [allNumbersOnPage]);
 
-  useEffect(() => {
-    setAllNumbersOfPage(countPages(currentTask));
-  }, [filterNow, allNumbersOnPage, currentTask]);
+
+  // useEffect(() => {
+  //   switch (filterNow) {
+  //     case 1:
+  //       setCurrentTask(todos.filter((item) => item.complete));
+  //       break;
+  //     case 2:
+  //       setCurrentTask(todos.filter((item) => !item.complete));
+  //       break;
+  //     default:
+  //       setCurrentTask(todos);
+  //   }
+  // }, [filterNow, todos]);
+
+
+  // useEffect(() => {
+  //   if (currentPage <= allNumbersOnPage) {
+  //     setCurrentPage(currentPage);
+  //   } else if (currentPage >= 2) {
+  //     setCurrentPage(currentPage - 1 || 1);
+  //   }
+  // }, [allNumbersOnPage]);
+
+  // useEffect(() => {
+  //   setAllNumbersOfPage(countPages(todos));
+  // }, [ allNumbersOnPage]);
 
 
 
   return (
-    
     <div className={style["App"]}>
       <header>
         <h1>ToDo</h1>
@@ -159,19 +214,18 @@ useEffect(() => {
       </div>
       
       <div className={style["todo-list"]}>
-        {currentTask.slice(firstTaskIndex, lastTaskIndex).map((todo) => {
+        {todos.map((todo) => {
           return (
             <ToDo
               todo={todo}
               setTodos={setTodos}
-              changeTaskStaus={changeTaskStaus}
+              changeTaskStatus={changeTaskStatus}
               todos={todos}
               removeTask={removeTask}
               userInput={userInput}
               setUserInput={setUserInput}
-              statusTaskInput = {statusTaskInput}
-              setStatusTaskInput = {setStatusTaskInput}
               editTaskOnDclick={editTaskOnDclick}
+              key={todo.uuid}
             />
           );
         })}
