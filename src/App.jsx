@@ -4,13 +4,10 @@ import ToDo from "./Components/ToDo/ToDo";
 import ToDoInput from "./Components/ToDoInput/ToDoInput";
 import style from "./App.module.css";
 import axios from "axios";
+import Swal from 'sweetalert2'
+import { FILTERS } from "./Constant/todos";
+import { TASK_PER_PAGE } from "./Constant/todos";
 
-  const FILTERS = {
-    ALL: 0,
-    DONE: 1,
-    UNDONE: 2,
-  };
-  const TASK_PER_PAGE = 5;
   
 
 const App = () => {
@@ -23,15 +20,40 @@ const App = () => {
   const [filterNow, setFilterNow] = useState(FILTERS.ALL);
   // const [statusTaskInput, setStatusTaskInput] = useState();
   const [tasksCount, setTasksCount] = useState(0)
-
+  const [edit, setEdit] = useState()
 
   const countPages = (todos) => Math.ceil(todos.length / TASK_PER_PAGE) || 1;
   // const lastTaskIndex = currentPage * TASK_PER_PAGE;
   // const firstTaskIndex = lastTaskIndex - TASK_PER_PAGE;
   const [allNumbersOnPage, setAllNumbersOfPage] = useState(countPages(todos));
 
-
-
+const currentFilter = (filterNow) => {
+  let filter = '';
+  if (filterNow === 1) filter = 'done';
+  if (filterNow === 2) filter = 'undone';
+  if (filterNow === 0) filter = ''; 
+  return filter 
+}
+  const fetchTodos = async () => {
+    const filter = currentFilter(filterNow)
+    const { data } = await axios
+      .get(
+        `https://todo-api-learning.herokuapp.com/v1/tasks/4?filterBy=${filter}&order=${sortDate ? 'asc' : 'desc'}&pp=5&page=${currentPage}`
+      ).catch((error) => {
+      Swal.fire({
+        background: 'linear-gradient(149deg, rgba(27, 227, 190, 0.4) 0%, rgba(145, 76, 241, 0.4) 42%, rgba(249, 36, 200, 0.4) 72%, rgba(175, 77, 205, 0.4) 100%)',
+        border: 'border-color: rgb(255, 217, 255);',
+        color: 'white',
+        icon: 'error',
+        title: 'Oops!',
+        text: 'Error receiving data from the server. Try again ',
+        footer: `Status code: ${error.response.status}`,
+      })
+    });
+    setTodos(data.tasks);
+    setTasksCount(data.count)
+    setAllNumbersOfPage(Math.ceil(tasksCount / 5) || 1)
+      }
 
 
   const addTask = (userInput) => {
@@ -40,15 +62,43 @@ const App = () => {
         name: userInput,
         done: false,
       })
-      .then((res) => {
-        console.log(res.data)
-        // const result = [...todos, res.data]
-        // if (result.length <= TASK_PER_PAGE) {
-          // setTodos(result);
-        // }
+      .then(() => {
         setTasksCount(tasksCount + 1)
-      }).catch((e) =>console.log(e))
-      setUserInput("");
+        }).catch((error) => {
+          switch (error.response.status) {
+            case 400:
+              Swal.fire({
+                background: 'linear-gradient(149deg, rgba(27, 227, 190, 0.4) 0%, rgba(145, 76, 241, 0.4) 42%, rgba(249, 36, 200, 0.4) 72%, rgba(175, 77, 205, 0.4) 100%)',
+                border: 'border-color: rgb(255, 217, 255);',
+                color: 'white',
+                icon: 'error',
+                title: 'Task not created',
+                text: 'The task has already exist',
+                footer: `Status code: ${error.response.status}`,
+              })
+              break;
+            case 422:
+              Swal.fire({
+                background: 'linear-gradient(149deg, rgba(27, 227, 190, 0.4) 0%, rgba(145, 76, 241, 0.4) 42%, rgba(249, 36, 200, 0.4) 72%, rgba(175, 77, 205, 0.4) 100%)',
+                border: 'border-color: rgb(255, 217, 255);',
+                color: 'white',
+                icon: 'error',
+                title: 'Invalid symbols in the field',
+                text: 'Try to rewrite your task',
+                footer: `Status code: ${error.response.status}`,
+              })
+              break;
+            default:
+              Swal.fire({
+                background: 'linear-gradient(149deg, rgba(27, 227, 190, 0.4) 0%, rgba(145, 76, 241, 0.4) 42%, rgba(249, 36, 200, 0.4) 72%, rgba(175, 77, 205, 0.4) 100%)',
+                border: 'border-color: rgb(255, 217, 255);',
+                color: 'white',
+                icon: 'error',
+                title: 'Oops!',
+                text: 'Unknown error!',
+                footer: `Status code: ${error.response.status}`,
+              })
+            }})
       // const newItem = {
       //   id: Math.random().toString(36).substr(2, 9),
       //   task: userInput,
@@ -66,9 +116,34 @@ const App = () => {
       const deletedTask = todos.filter((item) => item.uuid !== uuid);
       setTodos(deletedTask);// naming
       setTasksCount(tasksCount - 1)
-    }).catch((e) =>alert(`Error! ${e}`))
-
-  };
+    }).catch((error) => {
+      switch (error.response.status) {
+        case 404:
+          Swal.fire({
+            background: 'linear-gradient(149deg, rgba(27, 227, 190, 0.4) 0%, rgba(145, 76, 241, 0.4) 42%, rgba(249, 36, 200, 0.4) 72%, rgba(175, 77, 205, 0.4) 100%)',
+            border: 'border-color: rgb(255, 217, 255);',
+            color: 'white',
+            icon: 'error',
+            title: 'Task not found',
+            text: 'It seems like the task has been already deleted or doesn\'t exist',
+            footer: `Status code: ${error.response.status}`,
+          })
+          break;
+        default:
+          Swal.fire({
+            background: 'linear-gradient(149deg, rgba(27, 227, 190, 0.4) 0%, rgba(145, 76, 241, 0.4) 42%, rgba(249, 36, 200, 0.4) 72%, rgba(175, 77, 205, 0.4) 100%)',
+            border: 'border-color: rgb(255, 217, 255);',
+            color: 'white',
+            icon: 'error',
+            title: 'Oops!',
+            text: 'Something went wrong!',
+            footer: `Status code: ${error.response.status}`,
+          })
+      }
+    })
+}
+        
+      
 
   const changeTaskStatus = (uuid, done) => {
     axios.patch(`https://todo-api-learning.herokuapp.com/v1/task/4/${uuid}`, {done: !done}).then(() => {
@@ -80,12 +155,22 @@ const App = () => {
           return item;
         })
       );
-    }).catch((e) =>console.log(`Error! ${e}`))
+      if (filterNow !== FILTERS.ALL) fetchTodos();
+    }) .catch((error) => {
+      Swal.fire({
+        background: 'linear-gradient(149deg, rgba(27, 227, 190, 0.4) 0%, rgba(145, 76, 241, 0.4) 42%, rgba(249, 36, 200, 0.4) 72%, rgba(175, 77, 205, 0.4) 100%)',
+        border: 'border-color: rgb(255, 217, 255);',
+        color: 'white',
+        icon: 'error',
+        title: 'Oops!',
+        text: 'Something went wrong!',
+        footer: `Status code: ${error.response.status}`})
+      })}
+      
     // const changedStatusInTask = todos.map((todo) =>
     //   todo.id === id ? { ...todo, complete: !todo.complete } : {...todo} 
     // );
     // setTodos(changedStatusInTask);
-  };
 
   const selectedPage = (numbers) => {
     setCurrentPage(numbers);
@@ -93,54 +178,85 @@ const App = () => {
 
 
   const editTaskOnDclick = (uuid) => {
-    console.log(uuid, userInput)
     const title = userInput;
-    if (title) {
-      const newTask = todos.map((item) => 
-      item.uuid === uuid ? {...item, task: title, edit: false} : {...item})
-      setTodos(newTask)
-    }
+     if (title) {
+    axios.patch(`https://todo-api-learning.herokuapp.com/v1/task/4/${uuid}`, {name: title}).then(()=>{
+      setTodos(
+        todos.map((todo) => {
+          if (todo.uuid === uuid) {
+            const editedTodo = {
+              ...todo,
+              name: title
+            };
+            return editedTodo;
+          }
+          return todo;
+        })
+      );
+    }).catch((error) => {
+      switch (error.response.status) {
+        case 400:
+          Swal.fire({
+            background: 'linear-gradient(149deg, rgba(27, 227, 190, 0.4) 0%, rgba(145, 76, 241, 0.4) 42%, rgba(249, 36, 200, 0.4) 72%, rgba(175, 77, 205, 0.4) 100%)',
+            border: 'border-color: rgb(255, 217, 255);',
+            color: 'white',
+            icon: 'error',
+            title: 'Task not created',
+            text: 'The task has already exist',
+            footer: `Status code: ${error.response.status}`,
+          })
+          break;
+        case 422:
+          Swal.fire({
+            background: 'linear-gradient(149deg, rgba(27, 227, 190, 0.4) 0%, rgba(145, 76, 241, 0.4) 42%, rgba(249, 36, 200, 0.4) 72%, rgba(175, 77, 205, 0.4) 100%)',
+            border: 'border-color: rgb(255, 217, 255);',
+            color: 'white',
+            icon: 'error',
+            title: 'Invalid symbols in the field',
+            text: 'Try to rewrite your task',
+            footer: `Status code: ${error.response.status}`,
+          })
+          break;
+        default:
+          Swal.fire({
+            background: 'linear-gradient(149deg, rgba(27, 227, 190, 0.4) 0%, rgba(145, 76, 241, 0.4) 42%, rgba(249, 36, 200, 0.4) 72%, rgba(175, 77, 205, 0.4) 100%)',
+            border: 'border-color: rgb(255, 217, 255);',
+            color: 'white',
+            icon: 'error',
+            title: 'Oops!',
+            text: 'Unknown error!',
+            footer: `Status code: ${error.response.status}`,
+          })
+        }})
+     }
   };
   
 
 
   useEffect(() => {
-    const fetchData = async () => {
-      let filter = '';
-      if (filterNow === 1) filter = 'done';
-      if (filterNow === 2) filter = 'undone';
-      if (filterNow === 0) filter = ''; 
+ fetchTodos()
+  }, [sortDate, currentPage, filterNow, tasksCount,])
 
-      const { data } = await axios
-        .get(
-          `https://todo-api-learning.herokuapp.com/v1/tasks/4?filterBy=${filter}&order=${sortDate ? 'asc' : 'desc'}&pp=5&page=${currentPage}`
-        ).catch(e =>{
-          switch (e.response.status) {
-            case 400: alert('task not created');
-          
-          }
-        })
-      setTodos(data.tasks);
-      setTasksCount(data.count)
-      setAllNumbersOfPage(Math.ceil(tasksCount / 5) || 1)
-        }
-    fetchData()
-    
-  }, [todos])
+
   useEffect(() => {
-    switch (sortDate){
-      case true: 
-      setTodos(todos.sort((a, b) => b.createdAt - a.createdAt));
-      break;
-      case false:
-        setTodos(todos.sort((a, b) => a.createdAt - b.createdAt));
-        break;
-      default: break;
+    if (currentPage <= allNumbersOnPage) {
+      setCurrentPage(currentPage);
+    } else if (currentPage >= 2) {
+      setCurrentPage(currentPage - 1 || 1);
     }
-},[sortDate])
-
-
-
+  }, [todos]);
+  
+  //   useEffect(() => {
+//     switch (sortDate){
+//       case true: 
+//       setTodos(todos.sort((a, b) => b.createdAt - a.createdAt));
+//       break;
+//       case false:
+//         setTodos(todos.sort((a, b) => a.createdAt - b.createdAt));
+//         break;
+//       default: break;
+//     }
+// },[sortDate])
 
   // useEffect(() => {
   //   switch (filterNow) {
@@ -155,19 +271,13 @@ const App = () => {
   //   }
   // }, [filterNow, todos]);
 
-
   // useEffect(() => {
-  //   if (currentPage <= allNumbersOnPage) {
-  //     setCurrentPage(currentPage);
-  //   } else if (currentPage >= 2) {
-  //     setCurrentPage(currentPage - 1 || 1);
-  //   }
-  // }, [allNumbersOnPage]);
+  //   changeTaskStatus()
+  //   }, [sortDate, currentPage, filterNow, tasksCount ])
 
   // useEffect(() => {
   //   setAllNumbersOfPage(countPages(todos));
   // }, [ allNumbersOnPage]);
-
 
 
   return (
@@ -218,14 +328,14 @@ const App = () => {
           return (
             <ToDo
               todo={todo}
-              setTodos={setTodos}
               changeTaskStatus={changeTaskStatus}
-              todos={todos}
               removeTask={removeTask}
               userInput={userInput}
               setUserInput={setUserInput}
               editTaskOnDclick={editTaskOnDclick}
               key={todo.uuid}
+              edit = {edit}
+              setEdit={setEdit}
             />
           );
         })}

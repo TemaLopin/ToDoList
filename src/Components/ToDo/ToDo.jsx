@@ -3,13 +3,12 @@ import style from "./ToDo.module.css";
 const ToDo = ({
   userInput,
   setUserInput,
-  setTodos,
   todo,
-  todos,
   changeTaskStatus,
   removeTask,
   editTaskOnDclick, 
-
+  edit,
+  setEdit
 }) => {
  
 
@@ -17,10 +16,11 @@ const ToDo = ({
     switch (event.key) {
       case "Enter":
         editTaskOnDclick(id);
-        // changeStatusInput(id)
+        setEdit(null)
+        setUserInput('')
         break;
       case "Escape":
-        changeStatusInput(id)
+        setEdit(null)
         break;
       default:
         break;
@@ -28,26 +28,32 @@ const ToDo = ({
   };
 
   const blurInput = (event, id) => {
-    editTaskOnDclick(event, id);
+    setEdit(null);
   };
 
-
-  const changeStatusInput = (uuid) => {
-    setUserInput("");
-    const changedStatusInput = todos.map((todo) =>
-    todo.uuid === uuid ? { ...todo, edit: !todo.edit,  } : {...todo});
-    setTodos(changedStatusInput);
-  };
-
-  const handleChange = (event) => {
+ const changeStatusInput = (id) => {
+  setUserInput(todo.name)
+  setEdit(id);
+    
+  }
+ const handleChange = (event) => {
     setUserInput(event.currentTarget.value);
   };
 
+
+  // const changeStatusInput = (uuid) => {
+  //   setUserInput("");
+  //   const changedStatusInput = todos.map((todo) =>
+  //   todo.uuid === uuid ? { ...todo, edit: !todo.edit,  } : {...todo});
+  //   setTodos(changedStatusInput);
+  // };
+ 
+ 
   return (
     <div key={todo.id} className={style["item-todo"]}>
       <div className={style["task-block"]}>
         <div className={style["left-side"]}>
-          <div onClick={() => changeTaskStatus(todo.uuid)}>
+          <div onClick={() => changeTaskStatus(todo.uuid, todo.done)}>
             {todo.done ? <span>&#10006;</span> : <span>&#10004;</span>}
           </div>
           <div
@@ -57,11 +63,11 @@ const ToDo = ({
                 : style["item-text"]
             }
           >
-            {todo.edit === true ? (
+            {edit === todo.uuid ? (
               <input
                 className={style["editTask"]}
                 autoFocus
-                placeholder={todo.task}
+                placeholder={todo.name}
                 onBlur={() => {
                   blurInput(todo.uuid);
                 }}
