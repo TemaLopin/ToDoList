@@ -7,8 +7,7 @@ const axiosInstance = axios.create({
 
 export const postTask = (userInput) =>
   axiosInstance.post(`/task/4`, {
-    name: userInput,
-    done: false
+    name: userInput
   });
 
 export const deleteTask = (uuid) => axiosInstance.delete(`/task/4/${uuid}`);

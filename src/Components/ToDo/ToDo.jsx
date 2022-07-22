@@ -6,53 +6,41 @@ const ToDo = ({
   todo,
   changeTaskStatus,
   removeTask,
-  editTaskOnDclick, 
+  editTaskName,
   edit,
-  setEdit
+  setEdit,
 }) => {
- 
-
   const keyPress = (event, id) => {
     switch (event.key) {
       case "Enter":
-        editTaskOnDclick(id);
-        setEdit(null)
-        setUserInput('')
+        editTaskName(id);
+        setEdit(null);
+        setUserInput("");
         break;
       case "Escape":
-        setEdit(null)
+        setEdit(null);
         break;
       default:
         break;
     }
   };
 
-  const blurInput = (event, id) => {
+  const blurInput = () => {
     setEdit(null);
   };
 
- const changeStatusInput = (id) => {
-  setUserInput(todo.name)
-  setEdit(id);
-    
-  }
- const handleChange = (event) => {
+  const changeStatusInput = (id) => {
+    setUserInput(todo.name);
+    setEdit(id);
+  };
+  const handleChange = (event) => {
     setUserInput(event.currentTarget.value);
   };
 
-
-  // const changeStatusInput = (uuid) => {
-  //   setUserInput("");
-  //   const changedStatusInput = todos.map((todo) =>
-  //   todo.uuid === uuid ? { ...todo, edit: !todo.edit,  } : {...todo});
-  //   setTodos(changedStatusInput);
-  // };
- 
- 
   return (
     <div key={todo.id} className={style["item-todo"]}>
-      <div className={style["task-block"]}>
-        <div className={style["left-side"]}>
+      <div className={style["task-block"]}onDoubleClick={()=> changeStatusInput(todo.uuid)}>
+        <div className={style["left-side"]} >
           <div onClick={() => changeTaskStatus(todo.uuid, todo.done)}>
             {todo.done ? <span>&#10006;</span> : <span>&#10004;</span>}
           </div>
@@ -82,9 +70,6 @@ const ToDo = ({
               <div
                 className={style["task__text"]}
                 id={todo.uuid}
-                onDoubleClick={() => 
-                  changeStatusInput(todo.uuid)
-                }
               >
                 {todo.name}
               </div>
@@ -92,7 +77,9 @@ const ToDo = ({
           </div>
         </div>
         <div className={style["right-side"]}>
-          <div className={style["date-task"]}>{todo.createdAt.substr(0,10)}</div>
+          <div className={style["date-task"]}>
+            {todo.createdAt.substr(0, 10)}
+          </div>
           <div
             className={style["item-delete"]}
             onClick={() => removeTask(todo.uuid)}

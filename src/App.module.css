@@ -15,15 +15,10 @@
   background-size: 400%; 
   background-repeat: no-repeat;
   margin-bottom: 10px;
-
-
 }
-
 h1 {
   line-height: 72px;
 }
-
-
 
 .todo-list {
   display: flex;
@@ -32,10 +27,7 @@ h1 {
   width: 80%;
   margin-top: 70px;
 }
-/*
-.filter-button:hover {
-  color: darkred;
-} */
+
 .first-page {
 cursor: pointer;
 margin-right: 10px;

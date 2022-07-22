@@ -1,7 +1,5 @@
 import React from 'react';
 import style from "../Filtration/TaskFilter.module.css";
-import { FILTERS } from '../../Constant/todos';
-
 
 const TaskFilter = ({setFilterNow, FILTERS, setSortDate, filterNow}) => {
     return (
