@@ -24,7 +24,7 @@ export const changeDoneStatusTask = (uuid, done) =>
   });
 
 export const getTasks = (currentFilter, sortDate, currentPage) =>
-  axiosInstance.get(`/tasks/4`, {
+  axiosInstance.get("/tasks/4", {
     params: { 
         filterBy: currentFilter, 
         order: sortDate ? "asc" : "desc", 

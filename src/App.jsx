@@ -3,10 +3,10 @@ import Pagination from "./Components/Paginator/Pagination";
 import ToDo from "./Components/ToDo/ToDo";
 import ToDoInput from "./Components/ToDoInput/ToDoInput";
 import style from "./App.module.css";
-import axios from "axios";
 import { FILTERS, TASK_PER_PAGE } from "./Constant/todos";
-import { postTask, deleteTask, changeTask, changeDoneStatusTask,getTasks, changeNameForTask} from './Components/Server/server'
+import { postTask, deleteTask, changeDoneStatusTask, getTasks, changeNameForTask} from './Components/Server/server'
 import SweetAlert from "./Utilits/Alert/alert";
+import TaskFilter from "./Components/Filtration/TaskFilter";
 
 const App = () => {
   const [todos, setTodos] = useState([]);
@@ -30,7 +30,7 @@ const App = () => {
     if (filterNow === 0) filter = "";
     return filter;
   };
-  const fetchTodos = async () => {
+  const fetchTodos = async (filterNow, sortDate, currentPage) => {
     const filter = currentFilter(filterNow);
     const { data } = await getTasks(filter, sortDate, currentPage)
     .catch((error) => SweetAlert(error,'Oops!', "Error receiving data from the server. Try again"));
@@ -118,21 +118,16 @@ const App = () => {
 
   const editTaskOnDclick = (uuid) => {//
     if (userInput) {
-      changeNameForTask(uuid, userInput)
-        .then(() => {
-          setTodos(
-            todos.map((todo) => {
-              if (todo.uuid === uuid) {
-                const editedTodo = {
-                  ...todo,
-                  name: userInput,
-                };
-                return editedTodo;
-              }
-              return todo;
-            })
-          );
+      changeNameForTask(uuid, userInput).then(() => {
+        const newTodo = todos.map((item) => {
+          if (item.uuid === uuid) {
+            const newItem = { ...item }
+            newItem.done = !newItem.done;
+            return newItem;
+          }
+          return item;
         })
+        setTodos(newTodo);})
         .catch((error) => {
           switch (error.response.status) {
             case 400:
@@ -203,58 +198,12 @@ const App = () => {
         userInput={userInput}
         setUserInput={setUserInput}
       />
-      <div className={style[`filter-button-list`]}>
-        <button
-          onClick={() => setFilterNow(FILTERS.ALL)}
-          className={
-            filterNow === FILTERS.ALL
-              ? style["data-filter-active"]
-              : style["date-filter"]
-          }
-        >
-          All
-        </button>
-        <button
-          onClick={() => setFilterNow(FILTERS.DONE)}
-          className={
-            filterNow === FILTERS.DONE
-              ? style["data-filter-active"]
-              : style["date-filter"]
-          }
-        >
-          Done
-        </button>
-        <button
-          onClick={() => setFilterNow(FILTERS.UNDONE)}
-          className={
-            filterNow === FILTERS.UNDONE
-              ? style["data-filter-active"]
-              : style["date-filter"]
-          }
-        >
-          Undone
-        </button>
-        <button
-          className={
-            filterNow === FILTERS.BACK_DATE
-              ? style["data-filter-active"]
-              : style["date-filter"]
-          }
-          onClick={() => setSortDate(false)}
-        >
-          <span>date up</span>
-        </button>
-        <button
-          className={
-            filterNow === FILTERS.FORWARD_DATE
-              ? style["data-filter-active"]
-              : style["date-filter"]
-          }
-          onClick={() => setSortDate(true)}
-        >
-          <span>date down</span>
-        </button>
-      </div>
+      <TaskFilter 
+      setFilterNow = {setFilterNow}
+       FILTERS = {FILTERS}
+      setSortDate = {setSortDate}
+      filterNow={filterNow}/>
+
       <div className={style["todo-list"]}>
         {todos.map((todo) => {
           return (
