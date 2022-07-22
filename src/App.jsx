@@ -5,7 +5,8 @@ import ToDoInput from "./Components/ToDoInput/ToDoInput";
 import style from "./App.module.css";
 import axios from "axios";
 import { FILTERS, TASK_PER_PAGE } from "./Constant/todos";
-import SweetAlert from "./Components/Alert/alert";
+import { postTask, deleteTask, changeTask, changeDoneStatusTask,getTasks, changeNameForTask} from './Components/Server/server'
+import SweetAlert from "./Utilits/Alert/alert";
 
 const App = () => {
   const [todos, setTodos] = useState([]);
@@ -31,13 +32,8 @@ const App = () => {
   };
   const fetchTodos = async () => {
     const filter = currentFilter(filterNow);
-    const { data } = await axios
-      .get(
-        `https://todo-api-learning.herokuapp.com/v1/tasks/4?filterBy=${filter}&order=${
-          sortDate ? "asc" : "desc"
-        }&pp=5&page=${currentPage}`
-      )
-      .catch((error) => SweetAlert(error,'Oops!', "Error receiving data from the server. Try again"));
+    const { data } = await getTasks(filter, sortDate, currentPage)
+    .catch((error) => SweetAlert(error,'Oops!', "Error receiving data from the server. Try again"));
     setTodos(data.tasks);
     setTasksCount(data.count);
     setAllNumbersOfPage(Math.ceil(tasksCount / 5) || 1);
@@ -45,11 +41,7 @@ const App = () => {
 
   const addTask = (userInput) => {
     if (userInput && !userInput.includes("  ")) {
-      axios
-        .post("https://todo-api-learning.herokuapp.com/v1/task/4", {
-          name: userInput,
-          done: false,
-        })
+      postTask(userInput)
         .then(() => {
           setTasksCount(tasksCount + 1);
         })
@@ -79,8 +71,7 @@ const App = () => {
 
   const removeTask = (uuid) => {
     // setTodos(todos.filter((todo) => todo.id !== id));
-    axios
-      .delete(`https://todo-api-learning.herokuapp.com/v1/task/4/${uuid}`)
+      deleteTask(uuid)
       .then(() => {
         const deletedTask = todos.filter((item) => item.uuid !== uuid);
         setTodos(deletedTask); // naming
@@ -98,10 +89,7 @@ const App = () => {
   
 
   const changeTaskStatus = (uuid, done) => {
-    axios
-      .patch(`https://todo-api-learning.herokuapp.com/v1/task/4/${uuid}`, {
-        done: !done,
-      })
+    changeDoneStatusTask(uuid, done) 
       .then(() => {
         setTodos(
           todos.filter((item) => {
@@ -129,19 +117,15 @@ const App = () => {
   };
 
   const editTaskOnDclick = (uuid) => {//
-    const title = userInput;
-    if (title) {
-      axios
-        .patch(`https://todo-api-learning.herokuapp.com/v1/task/4/${uuid}`, {
-          name: title,
-        })
+    if (userInput) {
+      changeNameForTask(uuid, userInput)
         .then(() => {
           setTodos(
             todos.map((todo) => {
               if (todo.uuid === uuid) {
                 const editedTodo = {
                   ...todo,
-                  name: title,
+                  name: userInput,
                 };
                 return editedTodo;
               }
