@@ -8,9 +8,9 @@ import {
   postTask,
   deleteTask,
   changeDoneStatusTask,
-  getTasks,
   changeNameForTask,
-} from "./Components/Server/server";
+  getTasks,
+} from "./Components/Server/LocalServer";
 import SweetAlert from "./Utilits/Alert/alert";
 import TaskFilter from "./Components/Filtration/TaskFilter";
 
@@ -23,12 +23,12 @@ const App = () => {
 
   const [tasksCount, setTasksCount] = useState(0);
   const [edit, setEdit] = useState();
-
-  const countPages = (todos) => Math.ceil(todos.length / TASK_PER_PAGE) || 1;
   const [allNumbersOnPage, setAllNumbersOfPage] = useState(countPages(todos));
 
 
-  
+  function countPages(todos){
+    return Math.ceil(todos.length / TASK_PER_PAGE) || 1;
+  }
   const fetchTodos = async () => {
     const { data } = await getTasks(currentFilter, sortDate, currentPage).catch(
       (error) =>
@@ -38,7 +38,7 @@ const App = () => {
           "Error receiving data from the server. Try again"
         )
     );
-    setTodos(data.tasks);
+    setTodos(data.todos);
     setTasksCount(data.count);
     setAllNumbersOfPage(Math.ceil(tasksCount / 5) || 1);
   };
