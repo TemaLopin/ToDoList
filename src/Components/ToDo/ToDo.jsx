@@ -7,18 +7,19 @@ const ToDo = ({
   changeTaskStatus,
   removeTask,
   editTaskName,
-  edit,
-  setEdit,
+  taskStateChangeByUuid,
+  setTaskStateChangeByUuid,
 }) => {
   const keyPress = (event, id) => {
     switch (event.key) {
       case "Enter":
         editTaskName(id);
-        setEdit(null);
+        setTaskStateChangeByUuid(null);
         setUserInput("");
         break;
       case "Escape":
-        setEdit(null);
+        setTaskStateChangeByUuid(null);
+        setUserInput('')
         break;
       default:
         break;
@@ -26,12 +27,13 @@ const ToDo = ({
   };
 
   const blurInput = () => {
-    setEdit(null);
+    setTaskStateChangeByUuid(null);
+    setUserInput('')
   };
 
   const changeStatusInput = (id) => {
     setUserInput(todo.name);
-    setEdit(id);
+    setTaskStateChangeByUuid(id);
   };
   const handleChange = (event) => {
     setUserInput(event.currentTarget.value);
@@ -51,7 +53,7 @@ const ToDo = ({
                 : style["item-text"]
             }
           >
-            {edit === todo.uuid ? (
+            {taskStateChangeByUuid === todo.uuid ? (
               <input
                 className={style["editTask"]}
                 autoFocus
@@ -78,7 +80,7 @@ const ToDo = ({
         </div>
         <div className={style["right-side"]}>
           <div className={style["date-task"]}>
-            {todo.createdAt.substr(0, 10)}
+            {todo.updateAt.substring(0,10)}
           </div>
           <div
             className={style["item-delete"]}

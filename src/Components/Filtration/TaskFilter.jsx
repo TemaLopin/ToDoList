@@ -1,14 +1,14 @@
 import React from 'react';
 import style from "../Filtration/TaskFilter.module.css";
 
-const TaskFilter = ({setFilterNow, FILTERS, setSortDate, filterNow}) => {
+const TaskFilter = ({setFilterNow, FILTERS, setSortDate, currentFilter,sortDate}) => {
     return (
         <div>
              <div className={style[`filter-button-list`]}>
         <button
           onClick={() => setFilterNow(FILTERS.ALL)}
           className={
-            filterNow === FILTERS.ALL
+            currentFilter === FILTERS.ALL
               ? style["data-filter-active"]
               : style["date-filter"]
           }
@@ -18,7 +18,7 @@ const TaskFilter = ({setFilterNow, FILTERS, setSortDate, filterNow}) => {
         <button
           onClick={() => setFilterNow(FILTERS.DONE)}
           className={
-            filterNow === FILTERS.DONE
+            currentFilter === FILTERS.DONE
               ? style["data-filter-active"]
               : style["date-filter"]
           }
@@ -28,7 +28,7 @@ const TaskFilter = ({setFilterNow, FILTERS, setSortDate, filterNow}) => {
         <button
           onClick={() => setFilterNow(FILTERS.UNDONE)}
           className={
-            filterNow === FILTERS.UNDONE
+            currentFilter === FILTERS.UNDONE
               ? style["data-filter-active"]
               : style["date-filter"]
           }
@@ -37,7 +37,7 @@ const TaskFilter = ({setFilterNow, FILTERS, setSortDate, filterNow}) => {
         </button>
         <button
           className={
-            filterNow === FILTERS.BACK_DATE
+            !sortDate
               ? style["data-filter-active"]
               : style["date-filter"]
           }
@@ -47,7 +47,7 @@ const TaskFilter = ({setFilterNow, FILTERS, setSortDate, filterNow}) => {
         </button>
         <button
           className={
-            filterNow === FILTERS.FORWARD_DATE
+            sortDate
               ? style["data-filter-active"]
               : style["date-filter"]
           }

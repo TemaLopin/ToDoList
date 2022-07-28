@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { TASK_PER_PAGE } from "../../Constant/todos";
 const axiosRequest = axios.create({
   baseURL: process.env.REACT_APP_DATABASE_URL,
 });
@@ -18,7 +18,7 @@ axiosRequest.patch(`/todo/${uuid}`, {
 
 export const changeDoneStatusTask = (uuid, done) =>
 axiosRequest.patch(`/todo/${uuid}`, {
-    done: !done,
+    done: !done
   });
 
 export const getTasks = (currentFilter, sortDate, currentPage) =>
@@ -26,6 +26,6 @@ axiosRequest.get(`/todos`, {
     params: { 
         filterBy: currentFilter, 
         order: sortDate ? "asc" : "desc", 
-        pp: 5, 
+        pp: TASK_PER_PAGE, 
         page: currentPage },
   });

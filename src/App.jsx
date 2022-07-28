@@ -3,7 +3,7 @@ import Pagination from "./Components/Paginator/Pagination";
 import ToDo from "./Components/ToDo/ToDo";
 import ToDoInput from "./Components/ToDoInput/ToDoInput";
 import style from "./App.module.css";
-import { FILTERS, TASK_PER_PAGE } from "./Constant/todos";
+import { FILTERS } from "./Constant/todos";
 import {
   postTask,
   deleteTask,
@@ -20,15 +20,10 @@ const App = () => {
   const [userInput, setUserInput] = useState("");
   const [sortDate, setSortDate] = useState(false);
   const [currentFilter, setFilterNow] = useState(FILTERS.ALL);
-
   const [tasksCount, setTasksCount] = useState(0);
-  const [edit, setEdit] = useState();
-  const [allNumbersOnPage, setAllNumbersOfPage] = useState(countPages(todos));
+  const [taskStateChangeByUuid, setTaskStateChangeByUuid] = useState(null);
+  const [allNumbersOnPage, setAllNumbersOfPage] = useState(1);
 
-
-  function countPages(todos){
-    return Math.ceil(todos.length / TASK_PER_PAGE) || 1;
-  }
   const fetchTodos = async () => {
     const { data } = await getTasks(currentFilter, sortDate, currentPage).catch(
       (error) =>
@@ -41,6 +36,7 @@ const App = () => {
     setTodos(data.todos);
     setTasksCount(data.count);
     setAllNumbersOfPage(Math.ceil(tasksCount / 5) || 1);
+    
   };
 
   const addTask = (userInput) => {
@@ -48,6 +44,7 @@ const App = () => {
       postTask(userInput)
         .then(() => {
           setTasksCount(tasksCount + 1);
+          fetchTodos()
         })
         .catch((error) => {
           switch (error.response.status) {
@@ -71,15 +68,14 @@ const App = () => {
         });
     }
   };
- 
 
   const removeTask = (uuid) => {
-
     deleteTask(uuid)
       .then(() => {
         const arrAfterDeleteTask = todos.filter((item) => item.uuid !== uuid);
         setTodos(arrAfterDeleteTask);
         setTasksCount(tasksCount - 1);
+        fetchTodos()
       })
       .catch((error) => {
         switch (error.response.status) {
@@ -102,7 +98,7 @@ const App = () => {
         setTodos(
           todos.filter((item) => {
             if (item.uuid === uuid) {
-              item.done = !item.done; 
+              item.done = !item.done;
             }
             return item;
           })
@@ -114,8 +110,6 @@ const App = () => {
       });
   };
 
-  
-
   const selectedPage = (numbers) => {
     setCurrentPage(numbers);
   };
@@ -125,15 +119,15 @@ const App = () => {
       changeNameForTask(uuid, userInput)
         .then(() => {
           const newTodo = todos.map((todo) => {
-              if (todo.uuid === uuid) {
-                const editedTodo = {
-                  ...todo,
-                  name: userInput,
-                };
-                return editedTodo;
-              }
-              return todo;
-            })
+            if (todo.uuid === uuid) {
+              const editedTodo = {
+                ...todo,
+                name: userInput,
+              };
+              return editedTodo;
+            }
+            return todo;
+          });
           setTodos(newTodo);
         })
         .catch((error) => {
@@ -161,7 +155,10 @@ const App = () => {
 
   useEffect(() => {
     fetchTodos();
-  }, [sortDate, currentPage, currentFilter, tasksCount,]);
+  }, [ currentPage,sortDate, currentFilter]);
+
+
+
 
   useEffect(() => {
     if (currentPage <= allNumbersOnPage) {
@@ -170,8 +167,6 @@ const App = () => {
       setCurrentPage(currentPage - 1 || 1);
     }
   }, [todos]);
-
- 
 
   return (
     <div className={style["App"]}>
@@ -188,6 +183,7 @@ const App = () => {
         FILTERS={FILTERS}
         setSortDate={setSortDate}
         currentFilter={currentFilter}
+        sortDate={sortDate}
       />
 
       <div className={style["todo-list"]}>
@@ -201,8 +197,8 @@ const App = () => {
               setUserInput={setUserInput}
               editTaskName={editTaskName}
               key={todo.uuid}
-              edit={edit}
-              setEdit={setEdit}
+              taskStateChangeByUuid={taskStateChangeByUuid}
+              setTaskStateChangeByUuid={setTaskStateChangeByUuid}
             />
           );
         })}
